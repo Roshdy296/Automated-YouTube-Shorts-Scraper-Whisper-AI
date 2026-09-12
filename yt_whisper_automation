@@ -1,0 +1,48 @@
+import os
+import pandas as pd
+import yt_dlp
+import whisper
+
+def scrape_shorts_by_hashtag(hashtag="dataanalysis", max_results=5):
+    """
+    Extracts YouTube Shorts metadata by hashtag using yt-dlp.
+    """
+    ydl_opts = {
+        'quiet': True,
+        'extract_flat': True,
+        'force_generic_extractor': True,
+    }
+    
+    search_query = f"ytsearch{max_results}:#{hashtag} shorts"
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(search_query, download=False)
+        
+    videos = []
+    if 'entries' in info:
+        for entry in info['entries']:
+            videos.append({
+                'Video ID': entry.get('id'),
+                'Title': entry.get('title'),
+                'URL': f"https://www.youtube.com/watch?v={entry.get('id')}"
+            })
+            
+    return pd.DataFrame(videos)
+
+def transcribe_audio_whisper(audio_file_path):
+    """
+    Transcribes audio files locally using OpenAI Whisper model.
+    """
+    if not os.path.exists(audio_file_path):
+        return "Audio file not found."
+        
+    model = whisper.load_model("base")
+    result = model.transcribe(audio_file_path)
+    return result['text']
+
+if __name__ == "__main__":
+    print("[1/2] Scraping YouTube Shorts metadata...")
+    df_shorts = scrape_shorts_by_hashtag("tech", max_results=3)
+    
+    # Save metadata log to Excel
+    df_shorts.to_excel("yt_shorts_metadata.xlsx", index=False)
+    print("[SUCCESS] Metadata saved to yt_shorts_metadata.xlsx")
