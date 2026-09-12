@@ -1,3 +1,4 @@
+Markdown
 # 🎬 Automated YouTube Shorts Scraper & Whisper AI Engine
 
 An end-to-end Python automation pipeline designed to scrape viral YouTube Shorts by hashtag, transcribe audio using OpenAI's Whisper, identify key video highlights, and automatically sync outputs to Google Sheets and Google Drive.
@@ -44,3 +45,51 @@ Clone the repository and install dependencies:
 git clone [https://github.com/Roshdy296/Automated-YouTube-Shorts-Scraper-Whisper-AI.git](https://github.com/Roshdy296/Automated-YouTube-Shorts-Scraper-Whisper-AI.git)
 cd Automated-YouTube-Shorts-Scraper-Whisper-AI
 pip install -r requirements.txt
+💻 Code Quickstart
+Python
+import pandas as pd
+import yt_dlp
+import whisper
+
+def scrape_shorts(hashtag="tech", max_results=5):
+    ydl_opts = {'quiet': True, 'extract_flat': True}
+    search_query = f"ytsearch{max_results}:#{hashtag} shorts"
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(search_query, download=False)
+        
+    videos = []
+    if 'entries' in info:
+        for entry in info['entries']:
+            videos.append({
+                'ID': entry.get('id'),
+                'Title': entry.get('title'),
+                'URL': f"[https://www.youtube.com/watch?v=](https://www.youtube.com/watch?v=){entry.get('id')}"
+            })
+    return pd.DataFrame(videos)
+
+def transcribe(audio_path):
+    model = whisper.load_model("base")
+    result = model.transcribe(audio_path)
+    return result['text']
+
+if __name__ == "__main__":
+    df = scrape_shorts("dataanalysis", max_results=3)
+    df.to_excel("metadata_output.xlsx", index=False)
+    print("Scraping completed. Saved to metadata_output.xlsx")
+📂 Repository Structure
+Plaintext
+├── src/
+│   ├── scraper.py          # Scrapes YouTube metadata via yt-dlp
+│   ├── transcriber.py      # Audio extraction & OpenAI Whisper integration
+│   └── drive_sync.py       # Syncs processed videos to Google Drive
+├── data/                   # Directory for storing output Excel files & downloaded audio
+├── requirements.txt        # Required Python packages
+├── .gitignore              # Excludes temp media files, models, and API keys
+└── README.md               # Project documentation
+👤 Author
+Mohamed Rashidi
+
+GitHub: @Roshdy296
+
+Portfolio: roshdy296.github.io
