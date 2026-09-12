@@ -1,0 +1,5 @@
+pandas
+yt-dlp
+openai-whisper
+pydrive2
+openpyxl
